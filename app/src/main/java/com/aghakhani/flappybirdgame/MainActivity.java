@@ -1,24 +1,34 @@
 package com.aghakhani.flappybirdgame;
 
 import android.os.Bundle;
-
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity {
+
+    private GameView gameView; // Declare GameView as a member variable
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        // Initialize GameView and set it as the content view
+        gameView = new GameView(this);
+        setContentView(gameView); // Set the custom GameView as the content view
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (gameView != null) {
+            gameView.resume(); // Start the game loop
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (gameView != null) {
+            gameView.pause(); // Stop the game loop
+        }
     }
 }
