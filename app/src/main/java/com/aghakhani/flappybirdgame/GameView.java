@@ -13,9 +13,10 @@ import android.view.SurfaceView;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
+import android.media.MediaPlayer;
 
 public class GameView extends SurfaceView implements Runnable {
-
+    private MediaPlayer mediaPlayer;
     private Thread gameThread;
     private boolean isPlaying;
     private SurfaceHolder holder;
@@ -40,7 +41,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     public GameView(Context context) {
         super(context);
-
+        mediaPlayer = MediaPlayer.create(this.getContext(), R.raw.lose_sound);
         holder = getHolder();
         paint = new Paint();
         random = new Random();
@@ -171,6 +172,7 @@ public class GameView extends SurfaceView implements Runnable {
     public void stopGame() {
         isPlaying = false;
         gameOver = true;
+        mediaPlayer.start();
     }
 
     @Override
