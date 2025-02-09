@@ -5,15 +5,15 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.os.Handler;
+import android.media.MediaPlayer;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
-import android.media.MediaPlayer;
 
 public class GameView extends SurfaceView implements Runnable {
     private MediaPlayer gameOverSound;
@@ -22,6 +22,8 @@ public class GameView extends SurfaceView implements Runnable {
     private boolean isPlaying;
     private SurfaceHolder holder;
     private Paint paint;
+    private Handler colorChangeHandler = new Handler();
+    private boolean isYellow = false;
 
     private int screenX, screenY;
     private int birdX, birdY;
@@ -30,10 +32,10 @@ public class GameView extends SurfaceView implements Runnable {
     private int gravity = 2;
 
     private ArrayList<Rect> obstacles;
-    private int obstacleWidth = 200; // Width of the obstacle
-    private int gapHeight = 400; // Space between top and bottom obstacles
+    private int obstacleWidth = 200;
+    private int gapHeight = 400;
     private int obstacleSpeed = 10;
-    private int obstacleSpawnTime = 200; // Obstacle generation interval (frames)
+    private int obstacleSpawnTime = 200;
 
     private Random random;
     private int score = 0;
@@ -64,22 +66,18 @@ public class GameView extends SurfaceView implements Runnable {
             draw();
             sleep();
             gameMusic.start();
-
         }
     }
 
     private void update() {
         if (gameOver) return;
 
-        // Update bird movement
         birdVelocity += gravity;
         birdY += birdVelocity;
 
-        // Prevent bird from going off-screen
         if (birdY < 0) birdY = 0;
         if (birdY + birdSize > screenY) birdY = screenY - birdSize;
 
-        // Update obstacles and remove passed ones
         Iterator<Rect> iterator = obstacles.iterator();
         while (iterator.hasNext()) {
             Rect obstacle = iterator.next();
@@ -92,26 +90,21 @@ public class GameView extends SurfaceView implements Runnable {
             }
         }
 
-        // Generate obstacles at specific intervals
         if (frameCount % obstacleSpawnTime == 0) {
             int minHeight = screenY / 6;
             int maxHeight = screenY - gapHeight - minHeight;
-
             int topHeight = random.nextInt(maxHeight - minHeight) + minHeight;
             int bottomY = topHeight + gapHeight;
 
-            // Ensure obstacle heights are within valid range
             topHeight = Math.max(topHeight, minHeight);
             bottomY = Math.min(bottomY, screenY - minHeight);
 
-            // Create top and bottom obstacles
             obstacles.add(new Rect(screenX, 0, screenX + obstacleWidth, topHeight));
             obstacles.add(new Rect(screenX, bottomY, screenX + obstacleWidth, screenY));
         }
 
         frameCount++;
 
-        // Check for collision
         Rect birdRect = new Rect(birdX, birdY, birdX + birdSize, birdY + birdSize);
         for (Rect obstacle : obstacles) {
             if (Rect.intersects(birdRect, obstacle)) {
@@ -125,22 +118,18 @@ public class GameView extends SurfaceView implements Runnable {
             Canvas canvas = holder.lockCanvas();
             canvas.drawColor(Color.WHITE);
 
-            // Draw bird
             paint.setColor(Color.RED);
             canvas.drawRect(birdX, birdY, birdX + birdSize, birdY + birdSize, paint);
 
-            // Draw obstacles
-            paint.setColor(Color.GREEN);
+            paint.setColor(isYellow ? Color.YELLOW : Color.GREEN);
             for (Rect obstacle : obstacles) {
                 canvas.drawRect(obstacle, paint);
             }
 
-            // Draw score
             paint.setColor(Color.BLACK);
             paint.setTextSize(50);
             canvas.drawText("Score: " + score, 50, 100, paint);
 
-            // Draw game over text if the game ends
             if (gameOver) {
                 paint.setTextSize(100);
                 canvas.drawText("Game Over", screenX / 4, screenY / 2, paint);
@@ -162,6 +151,7 @@ public class GameView extends SurfaceView implements Runnable {
         isPlaying = true;
         gameThread = new Thread(this);
         gameThread.start();
+        startColorChangeLoop();
     }
 
     public void pause() {
@@ -197,5 +187,15 @@ public class GameView extends SurfaceView implements Runnable {
         obstacles.clear();
         gameOver = false;
         resume();
+    }
+
+    private void startColorChangeLoop() {
+        colorChangeHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                isYellow = !isYellow;
+                colorChangeHandler.postDelayed(this, 5000);
+            }
+        }, 5000);
     }
 }
