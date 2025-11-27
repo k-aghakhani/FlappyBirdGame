@@ -136,3 +136,8 @@ Created by **[Kiarash Aghakhani](https://github.com/k-aghakhani)**
 
 If you use this project for learning or build something on top of it, a star ⭐ on the repository is always appreciated!
 
+**Made with ❤️ and ☕ **
+
+Happy Coding! 🚀
+
+
